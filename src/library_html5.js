@@ -2412,7 +2412,7 @@ var LibraryJSEvents = {
 
   emscripten_webgl_do_commit_frame: function() {
 #if TRACE_WEBGL_CALLS
-    var threadId = (typeof _pthread_self !== 'undefined') ? _pthread_self : function() { return 1; };
+    var threadId = (typeof _emscripten_pthread_self !== 'undefined') ? _emscripten_pthread_self : function() { return 1; };
     console.error('[Thread ' + threadId() + ', GL ctx: ' + GL.currentContext.handle + ']: emscripten_webgl_do_commit_frame()');
 #endif
     if (!GL.currentContext || !GL.currentContext.GLctx) {

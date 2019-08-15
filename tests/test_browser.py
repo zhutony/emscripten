@@ -3579,6 +3579,13 @@ window.close = function() {
       </script>
     '''))
 
+  @requires_threads
+  def test_pthread_c11_threads(self):
+    self.btest(path_from_root('tests', 'pthread', 'test_pthread_c11_threads.c'),
+               expected='0',
+               force_c=True,
+               args=['-g4', '-std=gnu11', '-xc', '-s', 'USE_PTHREADS', '-s', 'PROXY_TO_PTHREAD'])
+
   # Test that the emscripten_ atomics api functions work.
   @requires_threads
   def test_pthread_atomics(self):

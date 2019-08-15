@@ -1009,8 +1009,19 @@ class libpthreads(AsanInstrumentedLibrary, MuslInternalLibrary, MTLibrary):
           'pthread_rwlock_wrlock.c', 'pthread_condattr_init.c',
           'pthread_mutex_getprioceiling.c', 'pthread_setcanceltype.c',
           'pthread_condattr_setclock.c', 'pthread_mutex_init.c',
-          'pthread_setspecific.c', 'pthread_setcancelstate.c'
-        ])
+          'pthread_setspecific.c', 'pthread_setcancelstate.c',
+          'pthread_self.c',
+          'pthread_detach.c',
+        ] + [
+          # C11 thread library functions
+          'thrd_create.c',
+          #'thrd_exit.c',
+          'thrd_join.c',
+          'thrd_sleep.c',
+          'thrd_yield.c',
+          'call_once.c',
+        ]
+      )
       files += [shared.path_from_root('system', 'lib', 'pthread', 'library_pthread.c')]
       if shared.Settings.WASM_BACKEND:
         files += [shared.path_from_root('system', 'lib', 'pthread', 'library_pthread_wasm.c')]

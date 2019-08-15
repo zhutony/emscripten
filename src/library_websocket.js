@@ -117,7 +117,7 @@ var LibraryWebSocket = {
   emscripten_websocket_set_onopen_callback_on_thread: function(socketId, userData, callbackFunc, thread) {
 // TODO:
 //    if (thread == {{{ cDefine('EM_CALLBACK_THREAD_CONTEXT_CALLING_THREAD') }}} ||
-//      (thread == _pthread_self()) return emscripten_websocket_set_onopen_callback_on_calling_thread(socketId, userData, callbackFunc);
+//      (thread == _emscripten_pthread_self()) return emscripten_websocket_set_onopen_callback_on_calling_thread(socketId, userData, callbackFunc);
 
     if (!WS.socketEvent) WS.socketEvent = _malloc(1024); // TODO: sizeof(EmscriptenWebSocketCloseEvent), which is the largest event struct
 

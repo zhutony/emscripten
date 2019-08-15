@@ -1,4 +1,4 @@
-static inline struct pthread *__pthread_self(void) { return pthread_self(); }
+static inline struct pthread *__pthread_self(void) { return emscripten_pthread_self(); }
 
 #define TP_ADJ(p) (p)
 

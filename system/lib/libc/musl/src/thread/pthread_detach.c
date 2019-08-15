@@ -1,6 +1,11 @@
 #include "pthread_impl.h"
 #include <threads.h>
 
+// XXX Emscripten doesn't implements pthread_join directly in JS
+#ifdef __EMSCRIPTEN__
+#define __pthread_join pthread_join
+#endif
+
 int __pthread_join(pthread_t, void **);
 
 static int __pthread_detach(pthread_t t)

@@ -247,7 +247,7 @@ this.onmessage = function(e) {
 #endif
 
       PThread.receiveObjectTransfer(e.data);
-      PThread.setThreadStatus({{{ makeAsmGlobalAccessInPthread('_pthread_self') }}}(), 1/*EM_THREAD_STATUS_RUNNING*/);
+      PThread.setThreadStatus({{{ makeAsmGlobalAccessInPthread('_emscripten_pthread_self') }}}(), 1/*EM_THREAD_STATUS_RUNNING*/);
 
       try {
         // pthread entry points are always of signature 'void *ThreadMain(void *arg)'

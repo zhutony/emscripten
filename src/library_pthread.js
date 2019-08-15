@@ -141,7 +141,7 @@ var LibraryPThread = {
     // Called when we are performing a pthread_exit(), either explicitly called by programmer,
     // or implicitly when leaving the thread main function.
     threadExit: function(exitCode) {
-      var tb = _pthread_self();
+      var tb = _emscripten_pthread_self();
       if (tb) { // If we haven't yet exited?
 #if PTHREADS_PROFILING
         var profilerBlock = Atomics.load(HEAPU32, (threadInfoStruct + {{{ C_STRUCTS.pthread.profilerBlock }}} ) >> 2);
@@ -267,7 +267,7 @@ var LibraryPThread = {
             if (worker.pthread) PThread.currentProxiedOperationCallerThread = worker.pthread.threadInfoStruct;
 
             // If this message is intended to a recipient that is not the main thread, forward it to the target thread.
-            if (d.targetThread && d.targetThread != _pthread_self()) {
+            if (d.targetThread && d.targetThread != _emscripten_pthread_self()) {
               var thread = PThread.pthreads[d.targetThread];
               if (thread) {
                 thread.worker.postMessage(e.data, d.transferList);
@@ -507,7 +507,7 @@ var LibraryPThread = {
     {{{ makeSetValue('__num_logical_cores', 0, 'cores', 'i32') }}};
   },
 
-  {{{ USE_LSAN || USE_ASAN ? 'emscripten_builtin_' : '' }}}pthread_create__deps: ['_spawn_thread', 'pthread_getschedparam', 'pthread_self', 'memalign'],
+  {{{ USE_LSAN || USE_ASAN ? 'emscripten_builtin_' : '' }}}pthread_create__deps: ['_spawn_thread', 'pthread_getschedparam', 'emscripten_pthread_self', 'memalign'],
   {{{ USE_LSAN || USE_ASAN ? 'emscripten_builtin_' : '' }}}pthread_create: function(pthread_ptr, attr, start_routine, arg) {
     if (typeof SharedArrayBuffer === 'undefined') {
       err('Current environment does not support SharedArrayBuffer, pthreads are not available!');
@@ -617,7 +617,8 @@ var LibraryPThread = {
     var detached = 0; // Default thread attr is PTHREAD_CREATE_JOINABLE, i.e. start as not detached.
     var schedPolicy = 0; /*SCHED_OTHER*/
     var schedPrio = 0;
-    if (attr) {
+    var __ATTRP_C11_THREAD = -1
+    if (attr && attr != __ATTRP_C11_THREAD) {
       stackSize = {{{ makeGetValue('attr', 0, 'i32') }}};
       // Musl has a convention that the stack size that is stored to the pthread attribute structure is always musl's #define DEFAULT_STACK_SIZE
       // smaller than the actual created stack size. That is, stored stack size of 0 would mean a stack of DEFAULT_STACK_SIZE in size. All musl
@@ -631,8 +632,8 @@ var LibraryPThread = {
         var prevSchedPolicy = {{{ makeGetValue('attr', 20/*_a_policy*/, 'i32') }}};
         var prevSchedPrio = {{{ makeGetValue('attr', 24/*_a_prio*/, 'i32') }}};
         // If we are inheriting the scheduling properties from the parent thread, we need to identify the parent thread properly - this function call may
-        // be getting proxied, in which case _pthread_self() will point to the thread performing the proxying, not the thread that initiated the call.
-        var parentThreadPtr = PThread.currentProxiedOperationCallerThread ? PThread.currentProxiedOperationCallerThread : _pthread_self();
+        // be getting proxied, in which case _emscripten_pthread_self() will point to the thread performing the proxying, not the thread that initiated the call.
+        var parentThreadPtr = PThread.currentProxiedOperationCallerThread ? PThread.currentProxiedOperationCallerThread : _emscripten_pthread_self();
         _pthread_getschedparam(parentThreadPtr, attr + 20, attr + 24);
         schedPolicy = {{{ makeGetValue('attr', 20/*_a_policy*/, 'i32') }}};
         schedPrio = {{{ makeGetValue('attr', 24/*_a_prio*/, 'i32') }}};
@@ -646,6 +647,7 @@ var LibraryPThread = {
       // According to http://man7.org/linux/man-pages/man3/pthread_create.3.html, default stack size if not specified is 2 MB, so follow that convention.
       stackSize = {{{ DEFAULT_PTHREAD_STACK_SIZE }}};
     }
+    console.log("pthread_create: stackSize=" + stackSize);
     var allocatedOwnStack = stackBase == 0; // If allocatedOwnStack == true, then the pthread impl maintains the stack allocation.
     if (allocatedOwnStack) {
       stackBase = _memalign({{{ STACK_ALIGN }}}, stackSize); // Allocate a stack if the user doesn't want to place the stack in a custom memory area.
@@ -685,7 +687,7 @@ var LibraryPThread = {
       detached: detached,
       startRoutine: start_routine,
       pthread_ptr: threadInfoStruct,
-      parent_pthread_ptr: _pthread_self(),
+      parent_pthread_ptr: _emscripten_pthread_self(),
       arg: arg,
 #if OFFSCREENCANVAS_SUPPORT
       moduleCanvasId: moduleCanvasId,
@@ -810,23 +812,6 @@ var LibraryPThread = {
     return 0;
   },
 
-  pthread_detach: function(thread) {
-    if (!thread) {
-      err('pthread_detach attempted on a null thread pointer!');
-      return ERRNO_CODES.ESRCH;
-    }
-    var self = {{{ makeGetValue('thread', C_STRUCTS.pthread.self, 'i32') }}};
-    if (self !== thread) {
-      err('pthread_detach attempted on thread ' + thread + ', which does not point to a valid thread, or does not exist anymore!');
-      return ERRNO_CODES.ESRCH;
-    }
-    var threadStatus = Atomics.load(HEAPU32, (thread + {{{ C_STRUCTS.pthread.threadStatus }}} ) >> 2);
-    // Follow musl convention: detached:0 means not detached, 1 means the thread was created as detached, and 2 means that the thread was detached via pthread_detach.
-    var wasDetached = Atomics.compareExchange(HEAPU32, (thread + {{{ C_STRUCTS.pthread.detached }}} ) >> 2, 0, 2);
-
-    return wasDetached ? ERRNO_CODES.EINVAL : 0;
-  },
-
   pthread_exit__deps: ['exit'],
   pthread_exit: function(status) {
     if (!ENVIRONMENT_IS_PTHREAD) _exit(status);
@@ -854,10 +839,10 @@ var LibraryPThread = {
   },
 
   // Public pthread_self() function which returns a unique ID for the thread.
-  pthread_self__deps: ['_pthread_ptr'],
-  pthread_self__asm: true,
-  pthread_self__sig: 'i',
-  pthread_self: function() {
+  emscripten_pthread_self__deps: ['_pthread_ptr'],
+  emscripten_pthread_self__asm: true,
+  emscripten_pthread_self__sig: 'i',
+  emscripten_pthread_self: function() {
     return __pthread_ptr|0;
   },
 
@@ -1004,15 +989,15 @@ var LibraryPThread = {
   emscripten_futex_wait__deps: ['_main_thread_futex_wait_address', 'emscripten_main_thread_process_queued_calls'],
   emscripten_futex_wait: function(addr, val, timeout) {
     if (addr <= 0 || addr > HEAP8.length || addr&3 != 0) return -{{{ cDefine('EINVAL') }}};
-//    dump('futex_wait addr:' + addr + ' by thread: ' + _pthread_self() + (ENVIRONMENT_IS_PTHREAD?'(pthread)':'') + '\n');
+//    dump('futex_wait addr:' + addr + ' by thread: ' + _emscripten_pthread_self() + (ENVIRONMENT_IS_PTHREAD?'(pthread)':'') + '\n');
     if (ENVIRONMENT_IS_WORKER) {
 #if PTHREADS_PROFILING
-      PThread.setThreadStatusConditional(_pthread_self(), {{{ cDefine('EM_THREAD_STATUS_RUNNING') }}}, {{{ cDefine('EM_THREAD_STATUS_WAITFUTEX') }}});
+      PThread.setThreadStatusConditional(_emscripten_pthread_self(), {{{ cDefine('EM_THREAD_STATUS_RUNNING') }}}, {{{ cDefine('EM_THREAD_STATUS_WAITFUTEX') }}});
 #endif
       var ret = Atomics.wait(HEAP32, addr >> 2, val, timeout);
-//    dump('futex_wait done by thread: ' + _pthread_self() + (ENVIRONMENT_IS_PTHREAD?'(pthread)':'') + '\n');
+//    dump('futex_wait done by thread: ' + _emscripten_pthread_self() + (ENVIRONMENT_IS_PTHREAD?'(pthread)':'') + '\n');
 #if PTHREADS_PROFILING
-      PThread.setThreadStatusConditional(_pthread_self(), {{{ cDefine('EM_THREAD_STATUS_WAITFUTEX') }}}, {{{ cDefine('EM_THREAD_STATUS_RUNNING') }}});
+      PThread.setThreadStatusConditional(_emscripten_pthread_self(), {{{ cDefine('EM_THREAD_STATUS_WAITFUTEX') }}}, {{{ cDefine('EM_THREAD_STATUS_RUNNING') }}});
 #endif
       if (ret === 'timed-out') return -{{{ cDefine('ETIMEDOUT') }}};
       if (ret === 'not-equal') return -{{{ cDefine('EWOULDBLOCK') }}};
@@ -1027,7 +1012,7 @@ var LibraryPThread = {
       var tEnd = tNow + timeout;
 
 #if PTHREADS_PROFILING
-      PThread.setThreadStatusConditional(_pthread_self(), {{{ cDefine('EM_THREAD_STATUS_RUNNING') }}}, {{{ cDefine('EM_THREAD_STATUS_WAITFUTEX') }}});
+      PThread.setThreadStatusConditional(_emscripten_pthread_self(), {{{ cDefine('EM_THREAD_STATUS_RUNNING') }}}, {{{ cDefine('EM_THREAD_STATUS_WAITFUTEX') }}});
 #endif
 
       // Register globally which address the main thread is simulating to be waiting on. When zero, main thread is not waiting on anything,
@@ -1038,7 +1023,7 @@ var LibraryPThread = {
         tNow = performance.now();
         if (tNow > tEnd) {
 #if PTHREADS_PROFILING
-          PThread.setThreadStatusConditional(_pthread_self(), {{{ cDefine('EM_THREAD_STATUS_RUNNING') }}}, {{{ cDefine('EM_THREAD_STATUS_WAITFUTEX') }}});
+          PThread.setThreadStatusConditional(_emscripten_pthread_self(), {{{ cDefine('EM_THREAD_STATUS_RUNNING') }}}, {{{ cDefine('EM_THREAD_STATUS_WAITFUTEX') }}});
 #endif
           return -{{{ cDefine('ETIMEDOUT') }}};
         }
@@ -1046,7 +1031,7 @@ var LibraryPThread = {
         addr = Atomics.load(HEAP32, __main_thread_futex_wait_address >> 2); // Look for a worker thread waking us up.
       }
 #if PTHREADS_PROFILING
-      PThread.setThreadStatusConditional(_pthread_self(), {{{ cDefine('EM_THREAD_STATUS_RUNNING') }}}, {{{ cDefine('EM_THREAD_STATUS_WAITFUTEX') }}});
+      PThread.setThreadStatusConditional(_emscripten_pthread_self(), {{{ cDefine('EM_THREAD_STATUS_RUNNING') }}}, {{{ cDefine('EM_THREAD_STATUS_WAITFUTEX') }}});
 #endif
       return 0;
     }
@@ -1061,7 +1046,7 @@ var LibraryPThread = {
     // Waking (at least) INT_MAX waiters is defined to mean wake all callers.
     // For Atomics.notify() API Infinity is to be passed in that case.
     if (count >= {{{ cDefine('INT_MAX') }}}) count = Infinity;
-//    dump('futex_wake addr:' + addr + ' by thread: ' + _pthread_self() + (ENVIRONMENT_IS_PTHREAD?'(pthread)':'') + '\n');
+//    dump('futex_wake addr:' + addr + ' by thread: ' + _emscripten_pthread_self() + (ENVIRONMENT_IS_PTHREAD?'(pthread)':'') + '\n');
 
     // See if main thread is waiting on this address? If so, wake it up by resetting its wake location to zero.
     // Note that this is not a fair procedure, since we always wake main thread first before any workers, so
@@ -1095,13 +1080,13 @@ var LibraryPThread = {
 
   emscripten_conditional_set_current_thread_status_js: function(expectedStatus, newStatus) {
 #if PTHREADS_PROFILING
-    PThread.setThreadStatusConditional(_pthread_self(), expectedStatus, newStatus);
+    PThread.setThreadStatusConditional(_emscripten_pthread_self(), expectedStatus, newStatus);
 #endif
   },
 
   emscripten_set_current_thread_status_js: function(newStatus) {
 #if PTHREADS_PROFILING
-    PThread.setThreadStatus(_pthread_self(), newStatus);
+    PThread.setThreadStatus(_emscripten_pthread_self(), newStatus);
 #endif
   },
 

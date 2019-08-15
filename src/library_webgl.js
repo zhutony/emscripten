@@ -409,7 +409,7 @@ var LibraryGL = {
       var numArgs = GL.webGLFunctionLengths[f]; // On Firefox & Chrome, could do "glCtx[realf].length", but that doesn't work on Edge, which always reports 0.
       if (numArgs === undefined) throw 'Unexpected WebGL function ' + f;
       var contextHandle = glCtx.canvas.GLctxObject.handle;
-      var threadId = (typeof _pthread_self !== 'undefined') ? _pthread_self : function() { return 1; };
+      var threadId = (typeof _emscripten_pthread_self !== 'undefined') ? _emscripten_pthread_self : function() { return 1; };
       // Accessing 'arguments' is super slow, so to avoid overhead, statically reason the number of arguments.
       switch(numArgs) {
         case 0: glCtx[f] = function webgl_0() { var ret = glCtx[realf](); console.error('[Thread ' + threadId() + ', GL ctx: ' + contextHandle + ']: ' + f + '() -> ' + ret); return ret; }; break;
@@ -799,7 +799,7 @@ var LibraryGL = {
       {{{ makeSetValue('handle', 0, 'webGLContextAttributes.explicitSwapControl', 'i32')}}}; // explicitSwapControl
 #endif
 #if USE_PTHREADS
-      {{{ makeSetValue('handle', 4, '_pthread_self()', 'i32')}}}; // the thread pointer of the thread that owns the control of the context
+      {{{ makeSetValue('handle', 4, '_emscripten_pthread_self()', 'i32')}}}; // the thread pointer of the thread that owns the control of the context
 #endif
       var context = {
         handle: handle,
