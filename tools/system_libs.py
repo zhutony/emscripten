@@ -121,35 +121,6 @@ def read_symbols(path):
     return shared.Building.parse_symbols(content).defs
 
 
-def get_wasm_libc_rt_files():
-  # Static linking is tricky with LLVM, since e.g. memset might not be used
-  # from libc, but be used as an intrinsic, and codegen will generate a libc
-  # call from that intrinsic *after* static linking would have thought it is
-  # all in there. In asm.js this is not an issue as we do JS linking anyhow,
-  # and have asm.js-optimized versions of all the LLVM intrinsics. But for
-  # wasm, we need a better solution. For now, make another archive that gets
-  # included at the same time as compiler-rt.
-  # Note that this also includes things that may be depended on by those
-  # functions - fmin uses signbit, for example, so signbit must be here (so if
-  # fmin is added by codegen, it will have all it needs).
-  math_files = files_in_path(
-    path_components=['system', 'lib', 'libc', 'musl', 'src', 'math'],
-    filenames=[
-      'fmin.c', 'fminf.c', 'fminl.c',
-      'fmax.c', 'fmaxf.c', 'fmaxl.c',
-      'fmod.c', 'fmodf.c', 'fmodl.c',
-      'log2.c', 'log2f.c', 'log10.c', 'log10f.c',
-      'exp2.c', 'exp2f.c', 'exp10.c', 'exp10f.c',
-      'scalbn.c', '__fpclassifyl.c',
-      '__signbitl.c', '__signbitf.c', '__signbit.c'
-    ])
-  other_files = files_in_path(
-    path_components=['system', 'lib', 'libc'],
-    filenames=['emscripten_memcpy.c', 'emscripten_memset.c',
-               'emscripten_memmove.c'])
-  return math_files + other_files
-
-
 class Library(object):
   """
   `Library` is the base class of all system libraries.
@@ -620,7 +591,6 @@ class NoBCLibrary(Library):
 
 class libcompiler_rt(Library):
   name = 'libcompiler_rt'
-  # compiler_rt files can't currently be part of LTO although we are hoping to remove this
   # restriction soon: https://reviews.llvm.org/D71738
   force_object_files = True
 
@@ -706,8 +676,11 @@ class libc(AsanInstrumentedLibrary, MuslInternalLibrary, MTLibrary):
       ]
 
     if shared.Settings.WASM_BACKEND:
-      # With the wasm backend these are included in wasm_libc_rt instead
-      blacklist += [os.path.basename(f) for f in get_wasm_libc_rt_files()]
+      libc_files += [
+        shared.path_from_root('system', 'lib', 'libc', 'emscripten_memcpy.c'),
+        shared.path_from_root('system', 'lib', 'libc', 'emscripten_memset.c'),
+        shared.path_from_root('system', 'lib', 'libc', 'emscripten_memmove.c'),
+      ]
     else:
       blacklist += ['rintf.c', 'ceil.c', 'ceilf.c', 'floor.c', 'floorf.c',
                     'fabs.c', 'fabsf.c', 'sqrt.c', 'sqrtf.c']
@@ -1188,13 +1161,6 @@ class CompilerRTWasmLibrary(Library):
     return shared.Settings.WASM_BACKEND
 
 
-class libc_rt_wasm(AsanInstrumentedLibrary, CompilerRTWasmLibrary, MuslInternalLibrary):
-  name = 'libc_rt_wasm'
-
-  def get_files(self):
-    return get_wasm_libc_rt_files()
-
-
 class libubsan_minimal_rt_wasm(CompilerRTWasmLibrary, MTLibrary):
   name = 'libubsan_minimal_rt_wasm'
   never_force = True
@@ -1482,9 +1448,6 @@ def calculate(temp_files, in_temp, stdout_, stderr_, forced=[]):
 
     # We need to build and link the library in
     add_library(lib)
-
-  if shared.Settings.WASM_BACKEND:
-    add_library(system_libs_map['libc_rt_wasm'])
 
   if shared.Settings.UBSAN_RUNTIME == 1:
     add_library(system_libs_map['libubsan_minimal_rt_wasm'])
