@@ -1066,10 +1066,10 @@ int main() {
     due to the inappropriate file suffix on foobar.xxx."""
     create_test_file('foobar.c', 'int main(){ return 0; }')
     os.symlink('foobar.c', 'foobar.xxx')
-    proc = run_process([PYTHON, EMCC, 'foobar.xxx', '-o', 'foobar.bc'] + flags, check=expect_success, stderr=PIPE)
+    proc = run_process([PYTHON, EMCC, 'foobar.xxx', '-o', 'foobar.js'] + flags, check=expect_success, stderr=PIPE)
     if not expect_success:
       self.assertNotEqual(proc.returncode, 0)
-      self.assertContained("unknown suffix", proc.stderr)
+      self.assertContained('unknown file type: foobar.xxx', proc.stderr)
 
   def test_multiply_defined_libsymbols(self):
     lib_name = 'libA.c'
@@ -7740,10 +7740,10 @@ int main() {
 }
     ''')
     run_process([PYTHON, EMCC, '-Wall', '-std=c++14', '-x', 'c++', 'src_tmp_fixed_lang'])
-    self.assertContained("Test_source_fixed_lang_hello", run_js('a.out.js'))
+    self.assertContained('Test_source_fixed_lang_hello', run_js('a.out.js'))
 
     stderr = self.expect_fail([PYTHON, EMCC, '-Wall', '-std=c++14', 'src_tmp_fixed_lang'])
-    self.assertContained("Input file has an unknown suffix, don't know what to do with it!", stderr)
+    self.assertContained('unknown file type: src_tmp_fixed_lang', stderr)
 
   def test_disable_inlining(self):
     create_test_file('test.c', r'''
@@ -8585,7 +8585,7 @@ int main() {
   def test_native_link_error_message(self):
     run_process([CLANG_CC, '-c', path_from_root('tests', 'hello_123.c'), '-o', 'hello_123.o'])
     err = self.expect_fail([PYTHON, EMCC, 'hello_123.o', '-o', 'hello_123.js'])
-    self.assertContained('hello_123.o is not a valid input', err)
+    self.assertContained('unknown file type: hello_123.o', err)
 
   # Tests that we should give a clear error on INITIAL_MEMORY not being enough for static initialization + stack
   def test_clear_error_on_massive_static_data(self):
@@ -10294,14 +10294,13 @@ Module.arguments has been replaced with plain arguments_
     self.assertContained('success', run_js('a.out.js'))
 
   def test_werror_python(self):
-    create_test_file('not_object.bc', 'some text')
     run_process([PYTHON, EMCC, '-c', '-o', 'hello.o', path_from_root('tests', 'hello_world.c')])
-    cmd = [PYTHON, EMCC, 'hello.o', 'not_object.bc', '-o', 'a.o']
+    cmd = [PYTHON, EMCC, 'hello.o', '-o', 'a.js', '-g', '--closure', '1']
     stderr = run_process(cmd, stderr=PIPE).stderr
-    self.assertContained('WARNING: not_object.bc is not a valid input file', stderr)
+    self.assertContained('WARNING: disabling closure because debug info was requested', stderr)
     # Same thing with -Werror should fail
     stderr = self.expect_fail(cmd + ['-Werror'])
-    self.assertContained('WARNING: not_object.bc is not a valid input file', stderr)
+    self.assertContained('WARNING: disabling closure because debug info was requested', stderr)
     self.assertContained('ERROR: treating warnings as errors (-Werror)', stderr)
 
   def test_emranlib(self):

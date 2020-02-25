@@ -68,7 +68,6 @@ SOURCE_ENDINGS = C_ENDINGS + CXX_ENDINGS + OBJC_ENDINGS + OBJCXX_ENDINGS + SPECI
 C_ENDINGS = C_ENDINGS + SPECIAL_ENDINGLESS_FILENAMES # consider the special endingless filenames like /dev/null to be C
 
 JS_CONTAINING_ENDINGS = ('.js', '.mjs', '.html')
-OBJECT_FILE_ENDINGS = ('.bc', '.o', '.obj', '.lo')
 DYNAMICLIB_ENDINGS = ('.dylib', '.so') # Windows .dll suffix is not included in this list, since those are never linked to directly on the command line.
 STATICLIB_ENDINGS = ('.a',)
 ASSEMBLY_ENDINGS = ('.ll',)
@@ -615,11 +614,6 @@ There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR P
 
   shared.check_sanity(force=DEBUG)
 
-  # This check comes after check_sanity because test_sanity expects this.
-  if not args:
-    logger.warning('no input files')
-    return 1
-
   if '-dumpmachine' in args:
     print(shared.get_llvm_target())
     return 0
@@ -760,10 +754,10 @@ There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR P
       # but then, we don't care about bitcode outputs anyhow, below, so
       # skipping returning early is fine
       return ret
-    if target.endswith('.js'):
-      shutil.copyfile(target, unsuffixed(target))
-      target = unsuffixed(target)
-    if not target.endswith(OBJECT_FILE_ENDINGS):
+    if not only_object:
+      if target.endswith('.js'):
+        shutil.copyfile(target, unsuffixed(target))
+        target = unsuffixed(target)
       src = open(target).read()
       full_node = ' '.join(shared.NODE_JS)
       if os.path.sep not in full_node:
@@ -986,15 +980,14 @@ There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR P
                     '-current_version', '-I', '-L', '-include-pch'):
           continue # ignore this gcc-style argument
 
-      if options.expand_symlinks and os.path.islink(arg) and get_file_suffix(os.path.realpath(arg)) in SOURCE_ENDINGS + OBJECT_FILE_ENDINGS + DYNAMICLIB_ENDINGS + ASSEMBLY_ENDINGS + HEADER_ENDINGS:
-        arg = os.path.realpath(arg)
-
       if not arg.startswith('-'):
         if not os.path.exists(arg):
           exit_with_error('%s: No such file or directory ("%s" was expected to be an input file, based on the commandline arguments provided)', arg, arg)
-
+        if options.expand_symlinks and os.path.islink(arg):
+          arg = os.path.realpath(arg)
         file_suffix = get_file_suffix(arg)
-        if file_suffix in SOURCE_ENDINGS + OBJECT_FILE_ENDINGS + DYNAMICLIB_ENDINGS + ASSEMBLY_ENDINGS + HEADER_ENDINGS or shared.Building.is_ar(arg): # we already removed -o <target>, so all these should be inputs
+        if file_suffix in SOURCE_ENDINGS + DYNAMICLIB_ENDINGS + HEADER_ENDINGS or shared.Building.is_ar(arg):
+          # we already removed -o <target>, so all these should be inputs
           newargs[i] = ''
           if file_suffix.endswith(SOURCE_ENDINGS):
             input_files.append((i, arg))
@@ -1018,23 +1011,17 @@ There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR P
                 libname = libname[len(prefix):]
                 break
             libs.append((i, libname))
-            newargs[i] = ''
-          else:
-            logger.warning(arg + ' is not a valid input file')
         elif file_suffix.endswith(STATICLIB_ENDINGS):
-          if not shared.Building.is_ar(arg):
-            if shared.Building.is_bitcode(arg):
-              message = arg + ': File has a suffix of a static library ' + str(STATICLIB_ENDINGS) + ', but instead is an LLVM bitcode file! When linking LLVM bitcode files, use one of the suffixes ' + str(OBJECT_FILE_ENDINGS)
-            else:
-              message = arg + ': Unknown format, not a static library!'
-            exit_with_error(message)
-        else:
-          if has_fixed_language_mode:
-            newargs[i] = ''
-            input_files.append((i, arg))
-            has_source_inputs = True
+          if shared.Building.is_bitcode(arg):
+            message = arg + ': File has a suffix of a static library ' + str(STATICLIB_ENDINGS) + ', but instead is an LLVM bitcode file! When linking LLVM bitcode files use .bc or .o.'
           else:
-            exit_with_error(arg + ": Input file has an unknown suffix, don't know what to do with it!")
+            message = arg + ': Unknown format, not a static library!'
+          exit_with_error(message)
+        else:
+          if shared.Building.is_wasm(arg) and not shared.Settings.WASM_BACKEND:
+            exit_with_error('fastcomp is not compatible with wasm object files:' + arg)
+          newargs[i] = ''
+          input_files.append((i, arg))
       elif arg == '-r':
         link_to_object = True
         newargs[i] = ''
@@ -1153,8 +1140,8 @@ There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR P
 
     input_files = filter_out_dynamic_libs(input_files)
 
-    if len(input_files) == 0:
-      exit_with_error('no input files\nnote that input files without a known suffix are ignored, make sure your input files end with one of: ' + str(SOURCE_ENDINGS + OBJECT_FILE_ENDINGS + DYNAMICLIB_ENDINGS + STATICLIB_ENDINGS + ASSEMBLY_ENDINGS + HEADER_ENDINGS))
+    if not input_files and not libs:
+      exit_with_error('no input files')
 
     # Note the exports the user requested
     shared.Building.user_requested_exports = shared.Settings.EXPORTED_FUNCTIONS[:]
@@ -2091,10 +2078,7 @@ There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR P
         if file_ending.endswith(SOURCE_ENDINGS):
           compile_source_file(i, input_file)
         else:
-          if file_ending.endswith(OBJECT_FILE_ENDINGS):
-            logger.debug('using object file: ' + input_file)
-            temp_files.append((i, input_file))
-          elif file_ending.endswith(DYNAMICLIB_ENDINGS):
+          if file_ending.endswith(DYNAMICLIB_ENDINGS):
             logger.debug('using shared library: ' + input_file)
             temp_files.append((i, input_file))
           elif shared.Building.is_ar(input_file):
@@ -2107,11 +2091,12 @@ There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR P
               temp_file = in_temp(unsuffixed(uniquename(input_file)) + '.o')
               shared.Building.llvm_as(input_file, temp_file)
               temp_files.append((i, temp_file))
+          elif has_fixed_language_mode:
+            compile_source_file(i, input_file)
           else:
-            if has_fixed_language_mode:
-              compile_source_file(i, input_file)
-            else:
-              exit_with_error(input_file + ': Unknown file suffix when compiling to LLVM bitcode!')
+            # Default to assuming the inputs are object files and pass them to the linker
+            logger.debug('using object file: ' + input_file)
+            temp_files.append((i, input_file))
 
     # exit block 'compile inputs'
     log_time('compile inputs')
@@ -2237,9 +2222,9 @@ There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR P
       # First, combine the bitcode files if there are several. We must also link if we have a singleton .a
       perform_link = len(linker_inputs) > 1 or shared.Settings.WASM_BACKEND
       if not perform_link and not LEAVE_INPUTS_RAW:
-        is_bc = suffix(temp_files[0][1]) in OBJECT_FILE_ENDINGS
         is_dylib = suffix(temp_files[0][1]) in DYNAMICLIB_ENDINGS
         is_ar = shared.Building.is_ar(temp_files[0][1])
+        is_bc = not is_ar and not is_dylib
         perform_link = not (is_bc or is_dylib) and is_ar
       if perform_link:
         logger.debug('linking: ' + str(linker_inputs))
