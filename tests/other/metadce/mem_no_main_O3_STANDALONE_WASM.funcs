@@ -1,4 +1,5 @@
-$__wasm_call_ctors
+$__main_void
+$_start
 $dlmalloc
 $foo
 $sbrk

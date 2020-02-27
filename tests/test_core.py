@@ -351,6 +351,10 @@ class TestCoreBase(RunnerCore):
     src = open('src.c.o.js').read()
     assert 'EMSCRIPTEN_GENERATED_FUNCTIONS' not in src, 'must not emit this unneeded internal thing'
 
+  @also_with_standalone_wasm
+  def test_hello_argc(self):
+    self.do_run_in_out_file_test('tests', 'core', 'test_hello_argc')
+
   def test_intvars(self):
     self.do_run_in_out_file_test('tests', 'core', 'test_intvars')
 

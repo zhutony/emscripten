@@ -1292,6 +1292,7 @@ class libasan_rt_wasm(SanitizerLibrary):
 # in JS as it's more efficient that way).
 class libstandalonewasm(MuslInternalLibrary):
   name = 'libstandalonewasm'
+  force_object_files = True
 
   cflags = ['-Os']
   src_dir = ['system', 'lib']
@@ -1326,8 +1327,9 @@ class libstandalonewasm(MuslInternalLibrary):
 
   def get_files(self):
     base_files = files_in_path(
-        path_components=['system', 'lib'],
-        filenames=['standalone_wasm.c'])
+        path_components=['system', 'lib', 'standalone'],
+        filenames=['standalone.c', '__original_main.c',
+                   '__main_void.c', '__main_argc_argv.c'])
     # It is more efficient to use JS methods for time, normally.
     time_files = files_in_path(
         path_components=['system', 'lib', 'libc', 'musl', 'src', 'time'],

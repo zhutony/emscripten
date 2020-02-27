@@ -1385,6 +1385,10 @@ There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR P
         # include it by default.  Should be eliminated by meta-DCE if unused.
         shared.Settings.EXPORTED_FUNCTIONS += ['_setThrew']
 
+    if shared.Settings.WASM_BACKEND and not shared.Settings.STANDALONE_WASM:
+      if '_main' in shared.Settings.EXPORTED_FUNCTIONS:
+        shared.Settings.EXPORTED_FUNCTIONS += ['___main_argc_argv']
+
     if shared.Settings.RELOCATABLE and not shared.Settings.DYNAMIC_EXECUTION:
       exit_with_error('cannot have both DYNAMIC_EXECUTION=0 and RELOCATABLE enabled at the same time, since RELOCATABLE needs to eval()')
 
