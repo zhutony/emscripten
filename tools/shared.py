@@ -3133,17 +3133,34 @@ class WebAssembly(object):
 
   @staticmethod
   def add_dylink_section(wasm_file, needed_dynlibs):
-    # a wasm shared library has a special "dylink" section, see tools-conventions repo
-    assert not Settings.WASM_BACKEND
-    mem_align = Settings.MAX_GLOBAL_ALIGN
-    mem_size = Settings.STATIC_BUMP
-    table_size = Settings.WASM_TABLE_SIZE
-    mem_align = int(math.log(mem_align, 2))
+    # A wasm shared library has a special "dylink" section, see tools-conventions repo.
+    # This function adds this section to the beginning on the given file.
+
+    wasm = open(wasm_file, 'rb').read()
+    section_name = b'\06dylink' # section name, including prefixed size
+    file_header = wasm[:8]
+
+    if Settings.WASM_BACKEND:
+      # Read the existing section data
+      offset = 8
+      assert wasm[offset] == 0
+      offset += 1
+      size, offset = WebAssembly.readLEB(wasm, offset)
+      section = wasm[offset:offset+size]
+      # section name
+      assert section.startswith(section_name)
+      offset = len(section_name)
+      mem_size, offset = WebAssembly.readLEB(section, offset)
+      mem_align, offset = WebAssembly.readLEB(section, offset)
+      table_size, offset = WebAssembly.readLEB(section, offset)
+      table_align, offset = WebAssembly.readLEB(section, offset)
+    else:
+      mem_align = int(math.log(Settings.MAX_GLOBAL_ALIGN, 2))
+      mem_size = Settings.STATIC_BUMP
+      table_size = Settings.WASM_TABLE_SIZE
+
     logger.debug('creating wasm dynamic library with mem size %d, table size %d, align %d' % (mem_size, table_size, mem_align))
 
-    # Write new wasm binary with 'dylink' section
-    wasm = open(wasm_file, 'rb').read()
-    section_name = b"\06dylink" # section name, including prefixed size
     contents = (WebAssembly.toLEB(mem_size) + WebAssembly.toLEB(mem_align) +
                 WebAssembly.toLEB(table_size) + WebAssembly.toLEB(0))
 
@@ -3177,7 +3194,7 @@ class WebAssembly(object):
     section_size = len(section_name) + len(contents)
     with open(wasm_file, 'wb') as f:
       # copy magic number and version
-      f.write(wasm[0:8])
+      f.write(file_header)
       # write the special section
       f.write(b'\0') # user section is code 0
       f.write(WebAssembly.toLEB(section_size))

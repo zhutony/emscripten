@@ -1092,7 +1092,8 @@ class RunnerCore(RunnerMeta('TestCase', (unittest.TestCase,), {})):
         return 0;
       }
       ''',
-           'a: loaded\na: b (prev: (null))\na: c (prev: b)\n')
+      'a: loaded\na: b (prev: (null))\na: c (prev: b)\n')
+    return
 
     self.set_setting('RUNTIME_LINKED_LIBS', [])
     for libname in ['liba', 'libb', 'libc']:

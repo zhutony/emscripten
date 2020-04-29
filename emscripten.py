@@ -669,7 +669,8 @@ def align_memory(addr):
 
 
 def align_static_bump(metadata):
-  metadata['staticBump'] = align_memory(metadata['staticBump'])
+  if not shared.Settings.RELOCATABLE:
+    metadata['staticBump'] = align_memory(metadata['staticBump'])
   return metadata['staticBump']
 
 
@@ -701,7 +702,9 @@ def update_settings_glue(metadata, DEBUG):
       diagnostics.warning('almost-asm', 'disabling asm.js validation due to use of SIMD')
       shared.Settings.ASM_JS = 2
 
-  shared.Settings.MAX_GLOBAL_ALIGN = metadata['maxGlobalAlign']
+  if not shared.Settings.WASM_BACKEND:
+    shared.Settings.MAX_GLOBAL_ALIGN = metadata['maxGlobalAlign']
+
   shared.Settings.IMPLEMENTED_FUNCTIONS = metadata['implementedFunctions']
   shared.Settings.WEAK_DECLARES = metadata.get('weakDeclares', [])
 
@@ -2729,7 +2732,6 @@ def load_metadata_wasm(metadata_raw, DEBUG):
     'implementedFunctions': [],
     'externs': [],
     'simd': False,
-    'maxGlobalAlign': 0,
     'staticBump': 0,
     'tableSize': 0,
     'initializers': [],

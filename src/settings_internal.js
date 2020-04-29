@@ -70,7 +70,8 @@ var DYNAMICTOP_PTR = -1;
 var DYNAMIC_BASE = -1;
 
 // Maximum seen global alignment; received from the backend.
-var MAX_GLOBAL_ALIGN = -1;
+// fastcomp-only
+var MAX_GLOBAL_ALIGN = 1;
 
 // List of functions implemented in compiled code; received from the backend.
 var IMPLEMENTED_FUNCTIONS = [];

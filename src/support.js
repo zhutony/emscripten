@@ -767,8 +767,8 @@ function getCompilerSetting(name) {
 // Then 'dynamic' memory for sbrk.
 var GLOBAL_BASE = {{{ GLOBAL_BASE }}};
 
-#if RELOCATABLE
-GLOBAL_BASE = alignMemory(GLOBAL_BASE, {{{ MAX_GLOBAL_ALIGN || 1 }}});
+#if RELOCATABLE && !WASM_BACKEND
+GLOBAL_BASE = alignMemory(GLOBAL_BASE, {{{ MAX_GLOBAL_ALIGN }}});
 #endif
 
 #if WASM_BACKEND && USE_PTHREADS
