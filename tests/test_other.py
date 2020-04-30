@@ -10847,8 +10847,24 @@ int main() {
     out = run_process([PYTHON, EMCC, '-Wl,--version'], stdout=PIPE).stdout
     self.assertContained('LLD ', out)
 
-  # Tests that if a JS library function is missing, the linker will print out which function depended on the
-  # missing function.
+  # Tests that if a JS library function is missing, the linker will print out which function
+  # depended on the missing function.
   def test_chained_js_error_diagnostics(self):
     err = self.expect_fail([PYTHON, EMCC, path_from_root('tests', 'test_chained_js_error_diagnostics.c'), '--js-library', path_from_root('tests', 'test_chained_js_error_diagnostics.js')])
     self.assertContained("error: undefined symbol: nonexistent_function (referenced by bar__deps: ['nonexistent_function'], referenced by foo__deps: ['bar'], referenced by top-level compiled C/C++ code)", err)
+
+  def test_native_call_before_init(self):
+    self.set_setting('ASSERTIONS')
+    self.set_setting('EXPORTED_FUNCTIONS', ['_foo'])
+    self.add_pre_run('console.log("calling foo"); Module["_foo"]();')
+    self.build('#include <stdio.h>\nint foo() { puts("foo called"); return 3; }', self.get_dir(), 'foo.c')
+    err = self.expect_fail(NODE_JS + ['foo.c.o.js'], stdout=PIPE)
+    self.assertContained('native function `foo` called before runtime initialization', err)
+
+  def test_native_call_after_exit(self):
+    self.set_setting('ASSERTIONS')
+    self.set_setting('EXIT_RUNTIME')
+    self.add_on_exit('console.log("calling main again"); Module["_main"]();')
+    self.build('#include <stdio.h>\nint main() { puts("foo called"); return 0; }', self.get_dir(), 'foo.c')
+    err = self.expect_fail(NODE_JS + ['foo.c.o.js'], stdout=PIPE)
+    self.assertContained('native function `main` called after runtime exit', err)
