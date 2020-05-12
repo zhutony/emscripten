@@ -1739,10 +1739,10 @@ def create_receiving(function_table_data, function_tables_defs, exported_impleme
           # var _main = asm["_main"];
           receiving += '\n'.join(['var ' + s + ' = asm["' + s + '"];' for s in imported_exports]) + '\n'
         else:
-          receiving += '\n'.join(['var ' + s + ' = Module["' + s + '"] = asm["' + s + '"];' for s in module_exports]) + '\n'
+          receiving += '\n'.join(make_export_wrappers(module_exports, delay_assignment))
     else:
       receiving += 'Module["asm"] = asm;\n'
-      receiving += '\n'.join(make_export_wrappers(module_exports))
+      receiving += '\n'.join(make_export_wrappers(module_exports, delay_assignment))
 
   if shared.Settings.EXPORT_FUNCTION_TABLES and not shared.Settings.WASM:
     for table in function_table_data.values():
@@ -2597,7 +2597,7 @@ def create_sending_wasm(invoke_funcs, forwarded_json, metadata):
   return '{ ' + ', '.join('"' + k + '": ' + send_items_map[k] for k in sorted_keys) + ' }'
 
 
-def make_export_wrappers(exports):
+def make_export_wrappers(exports, delay_assignment):
   wrappers = []
   for name in exports:
     if shared.Settings.WASM_BACKEND:
@@ -2611,7 +2611,7 @@ def make_export_wrappers(exports):
 /** @type {function(...*):?} */
 var %(mangled)s = Module["%(mangled)s"] = createExportWrapper("%(name)s");
 ''' % {'mangled': mangled, 'name': name})
-    else:
+    elif delay_assignment:
       # With assertions disabled the wrapper will replace the global var and Module var on
       # first use.
       wrappers.append('''\
@@ -2619,6 +2619,11 @@ var %(mangled)s = Module["%(mangled)s"] = createExportWrapper("%(name)s");
 var %(mangled)s = Module["%(mangled)s"] = function() {
   return (%(mangled)s = Module["%(mangled)s"] = Module["asm"]["%(name)s"]).apply(null, arguments);
 };
+''' % {'mangled': mangled, 'name': name})
+    else:
+      wrappers.append('''\
+/** @type {function(...*):?} */
+var %(mangled)s = Module["%(mangled)s"] = asm["%(name)s"]
 ''' % {'mangled': mangled, 'name': name})
   return wrappers
 
@@ -2659,10 +2664,10 @@ def create_receiving_wasm(exports, initializers):
         else:
           receiving += ['var ' + asmjs_mangle(s) + ' = asm["' + asmjs_mangle(s) + '"];' for s in exports_that_are_not_initializers]
       else:
-        receiving += make_export_wrappers(exports)
+        receiving += make_export_wrappers(exports, delay_assignment)
   else:
     receiving.append('Module["asm"] = asm;')
-    receiving += make_export_wrappers(exports)
+    receiving += make_export_wrappers(exports, delay_assignment)
 
   return '\n'.join(receiving) + '\n'
 
