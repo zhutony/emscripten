@@ -835,6 +835,7 @@ function createExportWrapper(name) {
 #endif
     assert(runtimeInitialized, 'native function `' + displayName + '` called before runtime initialization');
     assert(!runtimeExited, 'native function `' + displayName + '` called after runtime exit (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
+    assert(Module['asm'][name], 'exported native function `' + displayName + '` not found');
     return Module['asm'][name].apply(null, arguments);
   };
 }
