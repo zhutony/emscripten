@@ -825,7 +825,7 @@ var cyberDWARFFile = '{{{ BUNDLED_CD_DEBUG_FILE }}}';
 #include "URIUtils.js"
 
 #if ASSERTIONS
-function createExportWrapper(name) {
+function createExportWrapper(name, asm) {
   return function() {
     var displayName = name;
 #if !WASM_BACKEND
@@ -833,10 +833,13 @@ function createExportWrapper(name) {
       displayName = name.substr(1);
     }
 #endif
+    if (!asm) {
+      asm = Module['asm'];
+    }
+    assert(asm[name], 'exported native function `' + displayName + '` not found');
     assert(runtimeInitialized, 'native function `' + displayName + '` called before runtime initialization');
     assert(!runtimeExited, 'native function `' + displayName + '` called after runtime exit (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
-    assert(Module['asm'][name], 'exported native function `' + displayName + '` not found');
-    return Module['asm'][name].apply(null, arguments);
+    return asm[name].apply(null, arguments);
   };
 }
 #endif

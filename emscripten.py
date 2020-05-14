@@ -2607,9 +2607,15 @@ def make_export_wrappers(exports, delay_assignment):
     if shared.Settings.ASSERTIONS:
       # With assertions enabled we create a wrapper that are calls get routed through, for
       # the lifetime of the program.
-      wrappers.append('''\
+      if delay_assignment:
+        wrappers.append('''\
 /** @type {function(...*):?} */
 var %(mangled)s = Module["%(mangled)s"] = createExportWrapper("%(name)s");
+''' % {'mangled': mangled, 'name': name})
+      else:
+        wrappers.append('''\
+/** @type {function(...*):?} */
+var %(mangled)s = Module["%(mangled)s"] = createExportWrapper("%(name)s", asm);
 ''' % {'mangled': mangled, 'name': name})
     elif delay_assignment:
       # With assertions disabled the wrapper will replace the global var and Module var on
