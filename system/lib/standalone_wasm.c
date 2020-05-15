@@ -40,14 +40,18 @@ _Static_assert(CLOCK_THREAD_CPUTIME_ID == __WASI_CLOCKID_THREAD_CPUTIME_ID, "mus
 
 #define NSEC_PER_SEC (1000 * 1000 * 1000)
 
+struct timespec wasi_timestamp_to_timespec(__wasi_timestamp_t timestamp) {
+  return (struct timespec){.tv_sec = timestamp / NSEC_PER_SEC,
+                           .tv_nsec = timestamp % NSEC_PER_SEC};
+}
+
 int clock_gettime(clockid_t clk_id, struct timespec *tp) {
   __wasi_timestamp_t now;
   __wasi_errno_t error = __wasi_clock_time_get(clk_id, 0, &now);
   if (error != __WASI_ERRNO_SUCCESS) {
     return __wasi_syscall_ret(error);
   }
-  tp->tv_sec = now / NSEC_PER_SEC;
-  tp->tv_nsec = now % NSEC_PER_SEC;
+  *tp = wasi_timestamp_to_timespec(now);
   return 0;
 }
 
@@ -57,8 +61,7 @@ int clock_getres(clockid_t clk_id, struct timespec *tp) {
   if (error != __WASI_ERRNO_SUCCESS) {
     return __wasi_syscall_ret(error);
   }
-  tp->tv_sec = res / NSEC_PER_SEC;
-  tp->tv_nsec = res % NSEC_PER_SEC;
+  *tp = wasi_timestamp_to_timespec(res);
   return 0;
 }
 
