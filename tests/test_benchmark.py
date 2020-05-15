@@ -46,7 +46,7 @@ OPTIMIZATIONS = '-O3'
 
 PROFILING = 0
 
-LLVM_FEATURE_FLAGS = ['-mnontrapping-fptoint']
+LLVM_FEATURE_FLAGS = []#['-mnontrapping-fptoint']
 
 
 class Benchmarker(object):
@@ -239,6 +239,39 @@ class EmscriptenBenchmarker(Benchmarker):
     Building.clear()
 
 
+class EmscriptenWasm2CBenchmarker(EmscriptenBenchmarker):
+  def __init__(self, name):
+    super(EmscriptenWasm2CBenchmarker, self).__init__(name, 'no engine needed')
+
+  def build(self, parent, filename, args, shared_args, emcc_args, native_args, native_exec, lib_builder, has_output_parser):
+    # TODO: error on minimal + standalone
+    emcc_args = emcc_args + ['-s', 'STANDALONE_WASM', '-s', 'MINIMAL_RUNTIME=0']
+
+    super(EmscriptenWasm2CBenchmarker, self).build(parent, filename, args, shared_args, emcc_args, native_args, native_exec, lib_builder, has_output_parser)
+
+    base = self.filename[:-3]
+    wasm = base + '.wasm'
+    c = base + '.c'
+    h = base + '.h'
+    native = base + '.exe'
+
+    wabt_dir = os.path.expanduser('~/Dev/wabt/')
+    run_process([os.path.join(wabt_dir, 'build', 'wasm2c'), wasm, '-o', c])
+    run_process(['clang', os.path.join(wabt_dir, 'wasm2c', 'main-emscripten.c'), c,
+                 os.path.join(wabt_dir, 'wasm2c', 'wasm-rt-impl.c'), '-I.',
+                 '-I' + os.path.join(wabt_dir, 'wasm2c'), '-lm',
+                 '-include', h, '-o', native, OPTIMIZATIONS])
+
+    self.filename = native
+
+  def run(self, args):
+    return run_process([self.filename] + args, stdout=PIPE, stderr=PIPE, check=False).stdout
+
+  def get_output_files(self):
+    # return the native code. c size may also be interesting.
+    return [self.filename]
+
+
 CHEERP_BIN = '/opt/cheerp/bin/'
 
 
@@ -321,8 +354,9 @@ if V8_ENGINE and V8_ENGINE in shared.JS_ENGINES:
   aot_v8 = V8_ENGINE + ['--no-liftoff']
   default_v8_name = os.environ.get('EMBENCH_NAME') or 'v8'
   benchmarkers += [
-    EmscriptenBenchmarker(default_v8_name, aot_v8),
-    EmscriptenBenchmarker(default_v8_name + '-lto', aot_v8, ['-flto']),
+    #EmscriptenBenchmarker(default_v8_name, aot_v8),
+    #EmscriptenBenchmarker(default_v8_name + '-lto', aot_v8, ['-flto']),
+    EmscriptenWasm2CBenchmarker('wasm2c')
   ]
   if os.path.exists(CHEERP_BIN):
     benchmarkers += [
