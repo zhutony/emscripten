@@ -354,7 +354,7 @@ if V8_ENGINE and V8_ENGINE in shared.JS_ENGINES:
   aot_v8 = V8_ENGINE + ['--no-liftoff']
   default_v8_name = os.environ.get('EMBENCH_NAME') or 'v8'
   benchmarkers += [
-    #EmscriptenBenchmarker(default_v8_name, aot_v8),
+    EmscriptenBenchmarker(default_v8_name, aot_v8),
     #EmscriptenBenchmarker(default_v8_name + '-lto', aot_v8, ['-flto']),
     EmscriptenWasm2CBenchmarker('wasm2c')
   ]
@@ -1084,3 +1084,87 @@ class benchmark(runner.RunnerCore):
                                  path_from_root('tests', 'poppler', 'emscripten_html5.pdf') + '@input.pdf', '-s', 'ERROR_ON_UNDEFINED_SYMBOLS=0',
                                  '-s', 'MINIMAL_RUNTIME=0'], # not minimal because of files
                       lib_builder=lib_builder, skip_native=True)
+
+'''
+
+havlak: wasm trap! interesting. happend after adding close and seek, maybe it traps if those are not friendly?
+
+skinning is slower
+
+box2d is slower
+
+bullet:
+
+lua: broken on recent sam change to main test suite iirc
+
+lzma: wasm2c_lzma.c:(.text+0x4af5): undefined reference to `'
+/usr/bin/ld: /tmp/wasm2c_lzma-349f02.o: in function `w2c_f53':
+wasm2c_lzma.c:(.text+0x4f34): undefined reference to `'
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+
+sqlite: wasm2c_sqlite.c.c:(.text+0x3bb3): undefined reference to `Z_envZ_pthread_mutexattr_initZ_ii'
+/usr/bin/ld: wasm2c_sqlite.c.c:(.text+0x3bc0): undefined reference to `Z_envZ_pthread_mutexattr_settypeZ_iii'
+/usr/bin/ld: wasm2c_sqlite.c.c:(.text+0x3bc8): undefined reference to `Z_envZ_pthread_mutexattr_destroyZ_ii'
+/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f562':
+wasm2c_sqlite.c.c:(.text+0x1dda6): undefined reference to `Z_envZ___sys_stat64Z_iii'
+/usr/bin/ld: wasm2c_sqlite.c.c:(.text+0x1ec84): undefined reference to `Z_envZ___sys_stat64Z_iii'
+/usr/bin/ld: wasm2c_sqlite.c.c:(.text+0x1f228): undefined reference to `Z_envZ___sys_unlinkZ_ii'
+/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f556':
+wasm2c_sqlite.c.c:(.text+0x20a45): undefined reference to `Z_envZ___sys_unlinkZ_ii'
+/usr/bin/ld: wasm2c_sqlite.c.c:(.text+0x20ba7): undefined reference to `Z_wasi_snapshot_preview1Z_fd_syncZ_ii'
+/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f554':
+wasm2c_sqlite.c.c:(.text+0x20f1d): undefined reference to `Z_envZ___sys_stat64Z_iii'
+/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f549':
+wasm2c_sqlite.c.c:(.text+0x21280): undefined reference to `Z_envZ_dlopenZ_iii'
+/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f543':
+wasm2c_sqlite.c.c:(.text+0x213a2): undefined reference to `Z_envZ_dlerrorZ_iv'
+/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f532':
+wasm2c_sqlite.c.c:(.text+0x214ed): undefined reference to `Z_envZ_dlsymZ_iii'
+/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f520':
+wasm2c_sqlite.c.c:(.text+0x2152b): undefined reference to `Z_envZ_dlcloseZ_ii'
+/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f615':
+wasm2c_sqlite.c.c:(.text+0x23760): undefined reference to `'
+/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f614':
+wasm2c_sqlite.c.c:(.text+0x239af): undefined reference to `'
+/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f611':
+wasm2c_sqlite.c.c:(.text+0x23e8e): undefined reference to `Z_wasi_snapshot_preview1Z_fd_syncZ_ii'
+/usr/bin/ld: wasm2c_sqlite.c.c:(.text+0x2400c): undefined reference to `Z_wasi_snapshot_preview1Z_fd_syncZ_ii'
+/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f607':
+wasm2c_sqlite.c.c:(.text+0x271d4): undefined reference to `'
+/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f602':
+wasm2c_sqlite.c.c:(.text+0x29e7a): undefined reference to `Z_envZ___sys_unlinkZ_ii'
+/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f474':
+wasm2c_sqlite.c.c:(.text+0x2a169): undefined reference to `'
+/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f480':
+wasm2c_sqlite.c.c:(.text+0x2a1d9): undefined reference to `Z_envZ___sys_accessZ_iii'
+/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f479':
+wasm2c_sqlite.c.c:(.text+0x2a274): undefined reference to `Z_envZ___sys_getcwdZ_iii'
+/usr/bin/ld: wasm2c_sqlite.c.c:(.text+0x2a2b0): undefined reference to `Z_envZ___sys_getcwdZ_iii'
+/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f213':
+wasm2c_sqlite.c.c:(.text+0x2a379): undefined reference to `Z_envZ___sys_stat64Z_iii'
+/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f471':
+wasm2c_sqlite.c.c:(.text+0x2a40f): undefined reference to `Z_envZ___sys_fstat64Z_iii'
+/usr/bin/ld: wasm2c_sqlite.c.c:(.text+0x2a44e): undefined reference to `Z_wasi_snapshot_preview1Z_fd_fdstat_getZ_iii'
+/usr/bin/ld: wasm2c_sqlite.c.c:(.text+0x2a88b): undefined reference to `Z_envZ___sys_stat64Z_iii'
+/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f473':
+wasm2c_sqlite.c.c:(.text+0x2a8e5): undefined reference to `Z_envZ___sys_ftruncate64Z_iiiii'
+/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f478':
+wasm2c_sqlite.c.c:(.text+0x2aac9): undefined reference to `Z_envZ___sys_readZ_iiii'
+/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f598':
+wasm2c_sqlite.c.c:(.text+0x2b350): undefined reference to `Z_envZ___sys_unlinkZ_ii'
+/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f597':
+wasm2c_sqlite.c.c:(.text+0x2c261): undefined reference to `Z_envZ_utimesZ_iii'
+/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f596':
+wasm2c_sqlite.c.c:(.text+0x2c571): undefined reference to `Z_envZ___sys_unlinkZ_ii'
+/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f464':
+wasm2c_sqlite.c.c:(.text+0x6d7a5): undefined reference to `'
+/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f456':
+wasm2c_sqlite.c.c:(.text+0x6dbe4): undefined reference to `'
+/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f324':
+wasm2c_sqlite.c.c:(.text+0x2ab686): undefined reference to `'
+/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f332':
+wasm2c_sqlite.c.c:(.text+0x313f89): undefined reference to `Z_wasi_snapshot_preview1Z_environ_sizes_getZ_iii'
+/usr/bin/ld: wasm2c_sqlite.c.c:(.text+0x31405b): undefined reference to `Z_wasi_snapshot_preview1Z_environ_getZ_iii'
+
+zlib is slower
+'''
