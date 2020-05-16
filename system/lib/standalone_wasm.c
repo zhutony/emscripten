@@ -144,6 +144,10 @@ int emscripten_resize_heap(size_t size) {
   return 0;
 }
 
+double emscripten_get_now(void) {
+  return (1000 * clock()) / (double)CLOCKS_PER_SEC;
+}
+
 // C++ ABI
 
 // Emscripten disables exception catching by default, but not throwing. That
