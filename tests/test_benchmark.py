@@ -354,7 +354,7 @@ if V8_ENGINE and V8_ENGINE in shared.JS_ENGINES:
   aot_v8 = V8_ENGINE + ['--no-liftoff']
   default_v8_name = os.environ.get('EMBENCH_NAME') or 'v8'
   benchmarkers += [
-    EmscriptenBenchmarker(default_v8_name, aot_v8),
+    #EmscriptenBenchmarker(default_v8_name, aot_v8),
     #EmscriptenBenchmarker(default_v8_name + '-lto', aot_v8, ['-flto']),
     EmscriptenWasm2CBenchmarker('wasm2c')
   ]
@@ -1095,123 +1095,10 @@ box2d is slower
 bullet is slightly slower
 
 luas: 
-v_sdk_upstream_bin from cache> 
-/usr/bin/ld: /tmp/wasm2c_lua_binarytrees-a3177c.o: in function `w2c_f690':
-wasm2c_lua_binarytrees.c.c:(.text+0x27d9): undefined reference to `Z_envZ_signalZ_iii'
-/usr/bin/ld: wasm2c_lua_binarytrees.c.c:(.text+0x27f9): undefined reference to `Z_envZ_signalZ_iii'
-/usr/bin/ld: wasm2c_lua_binarytrees.c.c:(.text+0x29ac): undefined reference to `Z_envZ_signalZ_iii'
-/usr/bin/ld: wasm2c_lua_binarytrees.c.c:(.text+0x29cc): undefined reference to `Z_envZ_signalZ_iii'
-/usr/bin/ld: wasm2c_lua_binarytrees.c.c:(.text+0x2bfa): undefined reference to `Z_envZ_signalZ_iii'
-/usr/bin/ld: /tmp/wasm2c_lua_binarytrees-a3177c.o:wasm2c_lua_binarytrees.c.c:(.text+0x2c21): more undefined references to `Z_envZ_signalZ_iii' follow
-/usr/bin/ld: /tmp/wasm2c_lua_binarytrees-a3177c.o: in function `w2c_f364':
-wasm2c_lua_binarytrees.c.c:(.text+0x7342): undefined reference to `Z_envZ_timeZ_ii'
-/usr/bin/ld: /tmp/wasm2c_lua_binarytrees-a3177c.o: in function `w2c_f595':
-wasm2c_lua_binarytrees.c.c:(.text+0xe3bb): undefined reference to `Z_envZ___sys_unlinkZ_ii'
-/usr/bin/ld: /tmp/wasm2c_lua_binarytrees-a3177c.o: in function `w2c_f580':
-wasm2c_lua_binarytrees.c.c:(.text+0xf417): undefined reference to `Z_envZ_timeZ_ii'
-/usr/bin/ld: /tmp/wasm2c_lua_binarytrees-a3177c.o: in function `w2c_f579':
-wasm2c_lua_binarytrees.c.c:(.text+0x10095): undefined reference to `Z_envZ_difftimeZ_dii'
-/usr/bin/ld: /tmp/wasm2c_lua_binarytrees-a3177c.o: in function `w2c_f578':
-wasm2c_lua_binarytrees.c.c:(.text+0x101a1): undefined reference to `Z_envZ_systemZ_ii'
-/usr/bin/ld: /tmp/wasm2c_lua_binarytrees-a3177c.o: in function `w2c_f575':
-wasm2c_lua_binarytrees.c.c:(.text+0x103ed): undefined reference to `Z_envZ___sys_unlinkZ_ii'
-/usr/bin/ld: wasm2c_lua_binarytrees.c.c:(.text+0x103fa): undefined reference to `Z_envZ___sys_rmdirZ_ii'
-/usr/bin/ld: /tmp/wasm2c_lua_binarytrees-a3177c.o: in function `w2c_f574':
-wasm2c_lua_binarytrees.c.c:(.text+0x1049d): undefined reference to `Z_envZ___sys_renameZ_iii'
-/usr/bin/ld: /tmp/wasm2c_lua_binarytrees-a3177c.o: in function `w2c_f572':
-wasm2c_lua_binarytrees.c.c:(.text+0x11019): undefined reference to `Z_envZ_timeZ_ii'
-/usr/bin/ld: /tmp/wasm2c_lua_binarytrees-a3177c.o: in function `w2c_f571':
-wasm2c_lua_binarytrees.c.c:(.text+0x1151b): undefined reference to `Z_envZ___sys_lstat64Z_iii'
-/usr/bin/ld: /tmp/wasm2c_lua_binarytrees-a3177c.o: in function `w2c_f465':
-wasm2c_lua_binarytrees.c.c:(.text+0x1c6dd): undefined reference to `Z_wasi_snapshot_preview1Z_fd_readZ_iiiii'
-/usr/bin/ld: /tmp/wasm2c_lua_binarytrees-a3177c.o: in function `w2c_f191':
-wasm2c_lua_binarytrees.c.c:(.text+0x210ea): undefined reference to `Z_envZ___sys_dup3Z_iiii'
-/usr/bin/ld: wasm2c_lua_binarytrees.c.c:(.text+0x21107): undefined reference to `Z_envZ___sys_dup2Z_iii'
-/usr/bin/ld: /tmp/wasm2c_lua_binarytrees-a3177c.o: in function `w2c_f69':
-wasm2c_lua_binarytrees.c.c:(.text+0x3654a): undefined reference to `Z_envZ_emscripten_longjmpZ_vii'
-/usr/bin/ld: /tmp/wasm2c_lua_binarytrees-a3177c.o: in function `w2c_f180':
-wasm2c_lua_binarytrees.c.c:(.text+0x3714c): undefined reference to `Z_envZ_saveSetjmpZ_iiiii'
-/usr/bin/ld: wasm2c_lua_binarytrees.c.c:(.text+0x37157): undefined reference to `Z_envZ_getTempRet0Z_iv'
-/usr/bin/ld: wasm2c_lua_binarytrees.c.c:(.text+0x37196): undefined reference to `Z_envZ_invoke_viiZ_viii'
-/usr/bin/ld: wasm2c_lua_binarytrees.c.c:(.text+0x371f6): undefined reference to `Z_envZ_testSetjmpZ_iiii'
-/usr/bin/ld: wasm2c_lua_binarytrees.c.c:(.text+0x3720a): undefined reference to `Z_envZ_setTempRet0Z_vi'
-/usr/bin/ld: wasm2c_lua_binarytrees.c.c:(.text+0x37210): undefined reference to `Z_envZ_getTempRet0Z_iv'
-/usr/bin/ld: wasm2c_lua_binarytrees.c.c:(.text+0x37224): undefined reference to `Z_envZ_getTempRet0Z_iv'
-/usr/bin/ld: wasm2c_lua_binarytrees.c.c:(.text+0x372ce): undefined reference to `Z_envZ_emscripten_longjmpZ_vii'
-/usr/bin/ld: /tmp/wasm2c_lua_binarytrees-a3177c.o: in function `w2c_f308':
-wasm2c_lua_binarytrees.c.c:(.text+0x7cb49): undefined reference to `Z_wasi_snapshot_preview1Z_environ_sizes_getZ_iii'
-/usr/bin/ld: wasm2c_lua_binarytrees.c.c:(.text+0x7cc1b): undefined reference to `Z_wasi_snapshot_preview1Z_environ_getZ_iii'
-/usr/bin/ld: /tmp/wasm2c_lua_binarytrees-a3177c.o: in function `w2c_f490':
-wasm2c_lua_binarytrees.c.c:(.text+0x7ce6d): undefined reference to `Z_wasi_snapshot_preview1Z_args_sizes_getZ_iii'
-/usr/bin/ld: wasm2c_lua_binarytrees.c.c:(.text+0x7cee5): undefined reference to `Z_wasi_snapshot_preview1Z_args_getZ_iii'
-clang: error: linker command failed with exit code 1 (use -v to see invocation)
-ERROR
 
 lzma is slower
 
-sqlite: wasm2c_sqlite.c.c:(.text+0x3bb3): undefined reference to `Z_envZ_pthread_mutexattr_initZ_ii'
-/usr/bin/ld: wasm2c_sqlite.c.c:(.text+0x3bc0): undefined reference to `Z_envZ_pthread_mutexattr_settypeZ_iii'
-/usr/bin/ld: wasm2c_sqlite.c.c:(.text+0x3bc8): undefined reference to `Z_envZ_pthread_mutexattr_destroyZ_ii'
-/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f562':
-wasm2c_sqlite.c.c:(.text+0x1dda6): undefined reference to `Z_envZ___sys_stat64Z_iii'
-/usr/bin/ld: wasm2c_sqlite.c.c:(.text+0x1ec84): undefined reference to `Z_envZ___sys_stat64Z_iii'
-/usr/bin/ld: wasm2c_sqlite.c.c:(.text+0x1f228): undefined reference to `Z_envZ___sys_unlinkZ_ii'
-/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f556':
-wasm2c_sqlite.c.c:(.text+0x20a45): undefined reference to `Z_envZ___sys_unlinkZ_ii'
-/usr/bin/ld: wasm2c_sqlite.c.c:(.text+0x20ba7): undefined reference to `Z_wasi_snapshot_preview1Z_fd_syncZ_ii'
-/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f554':
-wasm2c_sqlite.c.c:(.text+0x20f1d): undefined reference to `Z_envZ___sys_stat64Z_iii'
-/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f549':
-wasm2c_sqlite.c.c:(.text+0x21280): undefined reference to `Z_envZ_dlopenZ_iii'
-/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f543':
-wasm2c_sqlite.c.c:(.text+0x213a2): undefined reference to `Z_envZ_dlerrorZ_iv'
-/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f532':
-wasm2c_sqlite.c.c:(.text+0x214ed): undefined reference to `Z_envZ_dlsymZ_iii'
-/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f520':
-wasm2c_sqlite.c.c:(.text+0x2152b): undefined reference to `Z_envZ_dlcloseZ_ii'
-/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f615':
-wasm2c_sqlite.c.c:(.text+0x23760): undefined reference to `'
-/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f614':
-wasm2c_sqlite.c.c:(.text+0x239af): undefined reference to `'
-/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f611':
-wasm2c_sqlite.c.c:(.text+0x23e8e): undefined reference to `Z_wasi_snapshot_preview1Z_fd_syncZ_ii'
-/usr/bin/ld: wasm2c_sqlite.c.c:(.text+0x2400c): undefined reference to `Z_wasi_snapshot_preview1Z_fd_syncZ_ii'
-/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f607':
-wasm2c_sqlite.c.c:(.text+0x271d4): undefined reference to `'
-/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f602':
-wasm2c_sqlite.c.c:(.text+0x29e7a): undefined reference to `Z_envZ___sys_unlinkZ_ii'
-/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f474':
-wasm2c_sqlite.c.c:(.text+0x2a169): undefined reference to `'
-/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f480':
-wasm2c_sqlite.c.c:(.text+0x2a1d9): undefined reference to `Z_envZ___sys_accessZ_iii'
-/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f479':
-wasm2c_sqlite.c.c:(.text+0x2a274): undefined reference to `Z_envZ___sys_getcwdZ_iii'
-/usr/bin/ld: wasm2c_sqlite.c.c:(.text+0x2a2b0): undefined reference to `Z_envZ___sys_getcwdZ_iii'
-/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f213':
-wasm2c_sqlite.c.c:(.text+0x2a379): undefined reference to `Z_envZ___sys_stat64Z_iii'
-/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f471':
-wasm2c_sqlite.c.c:(.text+0x2a40f): undefined reference to `Z_envZ___sys_fstat64Z_iii'
-/usr/bin/ld: wasm2c_sqlite.c.c:(.text+0x2a44e): undefined reference to `Z_wasi_snapshot_preview1Z_fd_fdstat_getZ_iii'
-/usr/bin/ld: wasm2c_sqlite.c.c:(.text+0x2a88b): undefined reference to `Z_envZ___sys_stat64Z_iii'
-/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f473':
-wasm2c_sqlite.c.c:(.text+0x2a8e5): undefined reference to `Z_envZ___sys_ftruncate64Z_iiiii'
-/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f478':
-wasm2c_sqlite.c.c:(.text+0x2aac9): undefined reference to `Z_envZ___sys_readZ_iiii'
-/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f598':
-wasm2c_sqlite.c.c:(.text+0x2b350): undefined reference to `Z_envZ___sys_unlinkZ_ii'
-/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f597':
-wasm2c_sqlite.c.c:(.text+0x2c261): undefined reference to `Z_envZ_utimesZ_iii'
-/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f596':
-wasm2c_sqlite.c.c:(.text+0x2c571): undefined reference to `Z_envZ___sys_unlinkZ_ii'
-/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f464':
-wasm2c_sqlite.c.c:(.text+0x6d7a5): undefined reference to `'
-/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f456':
-wasm2c_sqlite.c.c:(.text+0x6dbe4): undefined reference to `'
-/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f324':
-wasm2c_sqlite.c.c:(.text+0x2ab686): undefined reference to `'
-/usr/bin/ld: /tmp/wasm2c_sqlite-83a465.o: in function `w2c_f332':
-wasm2c_sqlite.c.c:(.text+0x313f89): undefined reference to `Z_wasi_snapshot_preview1Z_environ_sizes_getZ_iii'
-/usr/bin/ld: wasm2c_sqlite.c.c:(.text+0x31405b): undefined reference to `Z_wasi_snapshot_preview1Z_environ_getZ_iii'
+sqlite: 
 
 zlib is slower
 '''
