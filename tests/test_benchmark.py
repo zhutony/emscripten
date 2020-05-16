@@ -8,6 +8,7 @@ import math
 import os
 import re
 import shutil
+import subprocess
 import sys
 import time
 import unittest
@@ -260,12 +261,13 @@ class EmscriptenWasm2CBenchmarker(EmscriptenBenchmarker):
     run_process(['clang', os.path.join(wabt_dir, 'wasm2c', 'main-emscripten.c'), c,
                  os.path.join(wabt_dir, 'wasm2c', 'wasm-rt-impl.c'), '-I.',
                  '-I' + os.path.join(wabt_dir, 'wasm2c'), '-lm',
-                 '-include', h, '-o', native, OPTIMIZATIONS])
+                 '-include', h, '-o', native, OPTIMIZATIONS,
+                 '-DWASM_RT_MAX_CALL_STACK_DEPTH=8000'])  # for havlak
 
     self.filename = native
 
   def run(self, args):
-    return run_process([self.filename] + args, stdout=PIPE, stderr=PIPE, check=False).stdout
+    return run_process([self.filename] + args, stdout=PIPE, stderr=subprocess.STDOUT, check=False).stdout
 
   def get_output_files(self):
     # return the native code. c size may also be interesting.
@@ -354,7 +356,7 @@ if V8_ENGINE and V8_ENGINE in shared.JS_ENGINES:
   aot_v8 = V8_ENGINE + ['--no-liftoff']
   default_v8_name = os.environ.get('EMBENCH_NAME') or 'v8'
   benchmarkers += [
-    #EmscriptenBenchmarker(default_v8_name, aot_v8),
+    EmscriptenBenchmarker(default_v8_name, aot_v8),
     #EmscriptenBenchmarker(default_v8_name + '-lto', aot_v8, ['-flto']),
     EmscriptenWasm2CBenchmarker('wasm2c')
   ]
@@ -1088,17 +1090,19 @@ class benchmark(runner.RunnerCore):
 '''
 havlak: wasm trap! interesting. happend after adding close and seek, maybe it traps if those are not friendly?
 
+sqlite: halts in the middle, due to "fail to open DB file", so one of the stubses is wrongg
+
 skinning is slower
 
 box2d is slower
 
 bullet is slightly slower
 
-luas: 
+luas, poppler: need a files
+
+poppler: forget about em
 
 lzma is slower
-
-sqlite: 
 
 zlib is slower
 '''
