@@ -331,7 +331,7 @@ void speedtest1_exec(const char *zFormat, ...){
   }else{
     char *zErrMsg = 0;
     int rc = sqlite3_exec(g.db, zSql, 0, 0, &zErrMsg);
-    if( zErrMsg ) fatal_error("SQL error: %s\n%s\n", zErrMsg, zSql);
+    if( zErrMsg ) fatal_error("qaka SQL error: %s\n%s\n", zErrMsg, zSql);
     if( rc!=SQLITE_OK ) fatal_error("exec error: %s\n", sqlite3_errmsg(g.db));
   }
   sqlite3_free(zSql);
@@ -351,7 +351,7 @@ void speedtest1_prepare(const char *zFormat, ...){
     if( g.pStmt ) sqlite3_finalize(g.pStmt);
     rc = sqlite3_prepare_v2(g.db, zSql, -1, &g.pStmt, 0);
     if( rc ){
-      fatal_error("SQL error: %s\n", sqlite3_errmsg(g.db));
+      fatal_error("waka SQL error: %s\n", sqlite3_errmsg(g.db));
     }
   }
   sqlite3_free(zSql);
