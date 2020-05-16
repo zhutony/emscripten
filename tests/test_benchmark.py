@@ -45,7 +45,7 @@ IGNORE_COMPILATION = 0
 
 OPTIMIZATIONS = '-O3'
 
-PROFILING = 0
+PROFILING = 1
 
 LLVM_FEATURE_FLAGS = []#['-mnontrapping-fptoint']
 
@@ -356,7 +356,7 @@ if V8_ENGINE and V8_ENGINE in shared.JS_ENGINES:
   aot_v8 = V8_ENGINE + ['--no-liftoff']
   default_v8_name = os.environ.get('EMBENCH_NAME') or 'v8'
   benchmarkers += [
-    EmscriptenBenchmarker(default_v8_name, aot_v8),
+    #EmscriptenBenchmarker(default_v8_name, aot_v8),
     #EmscriptenBenchmarker(default_v8_name + '-lto', aot_v8, ['-flto']),
     EmscriptenWasm2CBenchmarker('wasm2c')
   ]
@@ -1088,21 +1088,12 @@ class benchmark(runner.RunnerCore):
                       lib_builder=lib_builder, skip_native=True)
 
 '''
-havlak: wasm trap! interesting. happend after adding close and seek, maybe it traps if those are not friendly?
+sqlite: halts in the middle, due to "fail to open DB file", so one of the stubses is wrongg, or doe sit need a file?
 
-sqlite: halts in the middle, due to "fail to open DB file", so one of the stubses is wrongg
+skinning is slower than wasm *even without* bounds checks (floaty stuff?)
 
-skinning is slower
+luas: need a files
 
-box2d is slower
+log_execution 2932 ;; set_stack_limit. standalone needs this too!
 
-bullet is slightly slower
-
-luas, poppler: need a files
-
-poppler: forget about em
-
-lzma is slower
-
-zlib is slower
 '''
