@@ -1095,12 +1095,60 @@ box2d is slower
 
 bullet:
 
-lua: broken on recent sam change to main test suite iirc
-
-lzma: wasm2c_lzma.c:(.text+0x4af5): undefined reference to `'
-/usr/bin/ld: /tmp/wasm2c_lzma-349f02.o: in function `w2c_f53':
-wasm2c_lzma.c:(.text+0x4f34): undefined reference to `'
+luas: 
+v_sdk_upstream_bin from cache> 
+/usr/bin/ld: /tmp/wasm2c_lua_binarytrees-a3177c.o: in function `w2c_f690':
+wasm2c_lua_binarytrees.c.c:(.text+0x27d9): undefined reference to `Z_envZ_signalZ_iii'
+/usr/bin/ld: wasm2c_lua_binarytrees.c.c:(.text+0x27f9): undefined reference to `Z_envZ_signalZ_iii'
+/usr/bin/ld: wasm2c_lua_binarytrees.c.c:(.text+0x29ac): undefined reference to `Z_envZ_signalZ_iii'
+/usr/bin/ld: wasm2c_lua_binarytrees.c.c:(.text+0x29cc): undefined reference to `Z_envZ_signalZ_iii'
+/usr/bin/ld: wasm2c_lua_binarytrees.c.c:(.text+0x2bfa): undefined reference to `Z_envZ_signalZ_iii'
+/usr/bin/ld: /tmp/wasm2c_lua_binarytrees-a3177c.o:wasm2c_lua_binarytrees.c.c:(.text+0x2c21): more undefined references to `Z_envZ_signalZ_iii' follow
+/usr/bin/ld: /tmp/wasm2c_lua_binarytrees-a3177c.o: in function `w2c_f364':
+wasm2c_lua_binarytrees.c.c:(.text+0x7342): undefined reference to `Z_envZ_timeZ_ii'
+/usr/bin/ld: /tmp/wasm2c_lua_binarytrees-a3177c.o: in function `w2c_f595':
+wasm2c_lua_binarytrees.c.c:(.text+0xe3bb): undefined reference to `Z_envZ___sys_unlinkZ_ii'
+/usr/bin/ld: /tmp/wasm2c_lua_binarytrees-a3177c.o: in function `w2c_f580':
+wasm2c_lua_binarytrees.c.c:(.text+0xf417): undefined reference to `Z_envZ_timeZ_ii'
+/usr/bin/ld: /tmp/wasm2c_lua_binarytrees-a3177c.o: in function `w2c_f579':
+wasm2c_lua_binarytrees.c.c:(.text+0x10095): undefined reference to `Z_envZ_difftimeZ_dii'
+/usr/bin/ld: /tmp/wasm2c_lua_binarytrees-a3177c.o: in function `w2c_f578':
+wasm2c_lua_binarytrees.c.c:(.text+0x101a1): undefined reference to `Z_envZ_systemZ_ii'
+/usr/bin/ld: /tmp/wasm2c_lua_binarytrees-a3177c.o: in function `w2c_f575':
+wasm2c_lua_binarytrees.c.c:(.text+0x103ed): undefined reference to `Z_envZ___sys_unlinkZ_ii'
+/usr/bin/ld: wasm2c_lua_binarytrees.c.c:(.text+0x103fa): undefined reference to `Z_envZ___sys_rmdirZ_ii'
+/usr/bin/ld: /tmp/wasm2c_lua_binarytrees-a3177c.o: in function `w2c_f574':
+wasm2c_lua_binarytrees.c.c:(.text+0x1049d): undefined reference to `Z_envZ___sys_renameZ_iii'
+/usr/bin/ld: /tmp/wasm2c_lua_binarytrees-a3177c.o: in function `w2c_f572':
+wasm2c_lua_binarytrees.c.c:(.text+0x11019): undefined reference to `Z_envZ_timeZ_ii'
+/usr/bin/ld: /tmp/wasm2c_lua_binarytrees-a3177c.o: in function `w2c_f571':
+wasm2c_lua_binarytrees.c.c:(.text+0x1151b): undefined reference to `Z_envZ___sys_lstat64Z_iii'
+/usr/bin/ld: /tmp/wasm2c_lua_binarytrees-a3177c.o: in function `w2c_f465':
+wasm2c_lua_binarytrees.c.c:(.text+0x1c6dd): undefined reference to `Z_wasi_snapshot_preview1Z_fd_readZ_iiiii'
+/usr/bin/ld: /tmp/wasm2c_lua_binarytrees-a3177c.o: in function `w2c_f191':
+wasm2c_lua_binarytrees.c.c:(.text+0x210ea): undefined reference to `Z_envZ___sys_dup3Z_iiii'
+/usr/bin/ld: wasm2c_lua_binarytrees.c.c:(.text+0x21107): undefined reference to `Z_envZ___sys_dup2Z_iii'
+/usr/bin/ld: /tmp/wasm2c_lua_binarytrees-a3177c.o: in function `w2c_f69':
+wasm2c_lua_binarytrees.c.c:(.text+0x3654a): undefined reference to `Z_envZ_emscripten_longjmpZ_vii'
+/usr/bin/ld: /tmp/wasm2c_lua_binarytrees-a3177c.o: in function `w2c_f180':
+wasm2c_lua_binarytrees.c.c:(.text+0x3714c): undefined reference to `Z_envZ_saveSetjmpZ_iiiii'
+/usr/bin/ld: wasm2c_lua_binarytrees.c.c:(.text+0x37157): undefined reference to `Z_envZ_getTempRet0Z_iv'
+/usr/bin/ld: wasm2c_lua_binarytrees.c.c:(.text+0x37196): undefined reference to `Z_envZ_invoke_viiZ_viii'
+/usr/bin/ld: wasm2c_lua_binarytrees.c.c:(.text+0x371f6): undefined reference to `Z_envZ_testSetjmpZ_iiii'
+/usr/bin/ld: wasm2c_lua_binarytrees.c.c:(.text+0x3720a): undefined reference to `Z_envZ_setTempRet0Z_vi'
+/usr/bin/ld: wasm2c_lua_binarytrees.c.c:(.text+0x37210): undefined reference to `Z_envZ_getTempRet0Z_iv'
+/usr/bin/ld: wasm2c_lua_binarytrees.c.c:(.text+0x37224): undefined reference to `Z_envZ_getTempRet0Z_iv'
+/usr/bin/ld: wasm2c_lua_binarytrees.c.c:(.text+0x372ce): undefined reference to `Z_envZ_emscripten_longjmpZ_vii'
+/usr/bin/ld: /tmp/wasm2c_lua_binarytrees-a3177c.o: in function `w2c_f308':
+wasm2c_lua_binarytrees.c.c:(.text+0x7cb49): undefined reference to `Z_wasi_snapshot_preview1Z_environ_sizes_getZ_iii'
+/usr/bin/ld: wasm2c_lua_binarytrees.c.c:(.text+0x7cc1b): undefined reference to `Z_wasi_snapshot_preview1Z_environ_getZ_iii'
+/usr/bin/ld: /tmp/wasm2c_lua_binarytrees-a3177c.o: in function `w2c_f490':
+wasm2c_lua_binarytrees.c.c:(.text+0x7ce6d): undefined reference to `Z_wasi_snapshot_preview1Z_args_sizes_getZ_iii'
+/usr/bin/ld: wasm2c_lua_binarytrees.c.c:(.text+0x7cee5): undefined reference to `Z_wasi_snapshot_preview1Z_args_getZ_iii'
 clang: error: linker command failed with exit code 1 (use -v to see invocation)
+ERROR
+
+lzma: 
 
 sqlite: wasm2c_sqlite.c.c:(.text+0x3bb3): undefined reference to `Z_envZ_pthread_mutexattr_initZ_ii'
 /usr/bin/ld: wasm2c_sqlite.c.c:(.text+0x3bc0): undefined reference to `Z_envZ_pthread_mutexattr_settypeZ_iii'
