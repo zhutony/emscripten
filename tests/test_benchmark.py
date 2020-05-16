@@ -1086,14 +1086,13 @@ class benchmark(runner.RunnerCore):
                       lib_builder=lib_builder, skip_native=True)
 
 '''
-
 havlak: wasm trap! interesting. happend after adding close and seek, maybe it traps if those are not friendly?
 
 skinning is slower
 
 box2d is slower
 
-bullet:
+bullet is slightly slower
 
 luas: 
 v_sdk_upstream_bin from cache> 
@@ -1148,7 +1147,7 @@ wasm2c_lua_binarytrees.c.c:(.text+0x7ce6d): undefined reference to `Z_wasi_snaps
 clang: error: linker command failed with exit code 1 (use -v to see invocation)
 ERROR
 
-lzma: 
+lzma is slower
 
 sqlite: wasm2c_sqlite.c.c:(.text+0x3bb3): undefined reference to `Z_envZ_pthread_mutexattr_initZ_ii'
 /usr/bin/ld: wasm2c_sqlite.c.c:(.text+0x3bc0): undefined reference to `Z_envZ_pthread_mutexattr_settypeZ_iii'
