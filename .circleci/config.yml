@@ -65,7 +65,8 @@ commands:
       - run:
           name: embuilder build ALL
           command: |
-            $PYTHON_BIN ./tools/gen_struct_info.py > test.json
+            # TODO(sbc): These currently seems to lock up windows.
+            #$PYTHON_BIN ./tools/gen_struct_info.py > test.json
             $PYTHON_BIN ./embuilder.py build ALL
             $PYTHON_BIN tests/runner.py test_hello_world
       - run:
