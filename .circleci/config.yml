@@ -63,10 +63,14 @@ commands:
             echo "final .emscripten:"
             cat ~/.emscripten
       - run:
+          name: gen_struct_info
+            # We've had issues in the past with building struct info when the
+            # cache is completely empty.  So make sure it works.
+            $PYTHON_BIN ./tools/gen_struct_info.py
+            $PYTHON_BIN ./emcc --clear-cache
+      - run:
           name: embuilder build ALL
           command: |
-            # TODO(sbc): These currently seems to lock up windows.
-            #$PYTHON_BIN ./tools/gen_struct_info.py > test.json
             $PYTHON_BIN ./embuilder.py build ALL
             $PYTHON_BIN tests/runner.py test_hello_world
       - run:
